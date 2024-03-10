@@ -1,4 +1,3 @@
-import json
 import requests
 
 
@@ -16,7 +15,7 @@ class PokemonConnection:
 
 class PokemonData(PokemonConnection):
 
-    def get_type_id(self, poke_type):
+    def get_poke_type_id(self, poke_type):
         """
         :param poke_type: could be : fire, water, shadow, rock, steel etc...
         :return: the type ID.
@@ -31,7 +30,7 @@ class PokemonData(PokemonConnection):
 
     def get_pokemon_list_by_type_id(self, poke_type):
         # Get ID for API url.
-        id_for_url = self.get_type_id(poke_type)
+        id_for_url = self.get_poke_type_id(poke_type)
         # Get pokemons list by API URL ID.
         pokemons_list_type_id = self.connect_to_api(f"type/{id_for_url}").json()['pokemon']
         # Get a list of all existing pokemons under selected type.
@@ -40,8 +39,21 @@ class PokemonData(PokemonConnection):
 
     def get_pokemons_url_by_type(self, poke_type):
         # Get ID for API url.
-        id_for_url = self.get_type_id(poke_type)
+        id_for_url = self.get_poke_type_id(poke_type)
         # Get pokemons list by API URL ID.
         pokemons_list_type_id = self.connect_to_api(f"type/{id_for_url}").json()['pokemon']
         poke_urls = {i['pokemon']['name']: i['pokemon']['url'] for i in pokemons_list_type_id}
         return poke_urls
+
+    def get_poke_weight_by_name(self, poke_name, poke_type):
+        poke_url = None
+        poke_dict = self.get_pokemons_url_by_type(poke_type)
+        for poke in poke_dict:
+            if poke != poke_name:
+                continue
+            poke_url = poke_dict[poke]
+            break
+        if poke_url is None:
+            return False
+        return requests.get(poke_url).json()['weight']
+
